@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 
 # Lataa .env samasta hakemistosta kuin tämä tiedosto
 _env_path = Path(__file__).parent / ".env"
-load_dotenv(_env_path)
+load_dotenv(_env_path, override=True)
 
 # ── Pakolliset ympäristömuuttujat ─────────────────────────────────────────────
 
