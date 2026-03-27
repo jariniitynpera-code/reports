@@ -159,3 +159,24 @@ EMAIL_NOTIFY_GREEN = os.getenv("EMAIL_NOTIFY_GREEN", "false")
 INVENTORY_LOW_STOCK_THRESHOLD = int(os.getenv("INVENTORY_LOW_STOCK_THRESHOLD") or "5")
 # "false" = ei tarkisteta varastoja (nopeuttaa ajoa jos ei tarvita)
 INVENTORY_CHECK_ENABLED = os.getenv("INVENTORY_CHECK_ENABLED", "true").lower() == "true"
+
+
+# ── Huomisen briiffi ───────────────────────────────────────────────────────────
+
+# ClickUp-lista johon briiffit julkaistaan (luo oma lista, esim. "Huomisen briiffit")
+BRIEF_CLICKUP_LIST_ID = os.getenv("BRIEF_CLICKUP_LIST_ID", "")
+
+# ClickUp-listat joista tehtävät haetaan (pilkulla erotettu: "id1,id2")
+BRIEF_CLICKUP_TASKS_LIST_ID = os.getenv("BRIEF_CLICKUP_TASKS_LIST_ID", "")
+
+# Maksimi tehtävämäärä briiffiä kohden
+BRIEF_MAX_TASKS = int(os.getenv("BRIEF_MAX_TASKS") or "3")
+
+# Siirtymäpuskuri minuuteissa
+BRIEF_TRANSITION_BUFFER_MIN = int(os.getenv("BRIEF_TRANSITION_BUFFER_MIN") or "20")
+
+# Tiukan päivän raja tunteina (>= tämä → tight)
+BRIEF_TIGHT_DAY_MEETING_HOURS = float(os.getenv("BRIEF_TIGHT_DAY_MEETING_HOURS") or "4.0")
+
+# Briiffin ajastusaika (dokumentaatiota varten)
+BRIEF_CRON_TIME = os.getenv("BRIEF_CRON_TIME", "16:00")

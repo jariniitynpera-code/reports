@@ -1,0 +1,86 @@
+name: Huomisen briiffi
+
+on:
+  schedule:
+    # 13:00 UTC = 16:00 EEST (kesäaika) / 15:00 EET (talviaika)
+    # Vaihda 14:00 UTC:ksi talvella jos haluat tasan 16:00
+    - cron: '0 13 * * 1-5'   # Arkisin ma–pe
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Briiffipäivä (YYYY-MM-DD), tyhjä = huominen'
+        required: false
+        default: ''
+      force:
+        description: 'Aja uudelleen vaikka briiffi on jo olemassa'
+        required: false
+        default: 'false'
+        type: boolean
+      dry_run:
+        description: 'Dry-run (älä julkaise ClickUpiin)'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  run-brief:
+    name: Generoi huomisen briiffi
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Aseta Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Asenna riippuvuudet
+        run: pip install -r requirements.txt
+
+      - name: Aja briiffi
+        env:
+          SHOPIFY_SHOP:          ${{ secrets.SHOPIFY_SHOP }}
+          SHOPIFY_CLIENT_ID:     ${{ secrets.SHOPIFY_CLIENT_ID }}
+          SHOPIFY_CLIENT_SECRET: ${{ secrets.SHOPIFY_CLIENT_SECRET }}
+          SHOPIFY_API_VERSION:   ${{ secrets.SHOPIFY_API_VERSION }}
+          SUPABASE_URL:          ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY:  ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CLICKUP_API_KEY:       ${{ secrets.CLICKUP_API_KEY }}
+          CLICKUP_LIST_ID:       ${{ secrets.CLICKUP_LIST_ID }}
+          TIMEZONE:              Europe/Helsinki
+          # Briiffi-spesifit
+          BRIEF_CLICKUP_LIST_ID:       ${{ secrets.BRIEF_CLICKUP_LIST_ID }}
+          BRIEF_CLICKUP_TASKS_LIST_ID: ${{ secrets.BRIEF_CLICKUP_TASKS_LIST_ID }}
+          BRIEF_MAX_TASKS:             ${{ secrets.BRIEF_MAX_TASKS }}
+          BRIEF_TRANSITION_BUFFER_MIN: ${{ secrets.BRIEF_TRANSITION_BUFFER_MIN }}
+          BRIEF_TIGHT_DAY_MEETING_HOURS: ${{ secrets.BRIEF_TIGHT_DAY_MEETING_HOURS }}
+          # Google Calendar (valinnainen)
+          GCAL_CREDENTIALS_JSON: ${{ secrets.GCAL_CREDENTIALS_JSON }}
+          GCAL_CALENDAR_ID:      ${{ secrets.GCAL_CALENDAR_ID }}
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.date }}" ]; then
+            ARGS="--date ${{ github.event.inputs.date }}"
+          fi
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+            ARGS="$ARGS --force"
+          fi
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          python brief_main.py $ARGS
+          EXIT=$?
+          if [ $EXIT -eq 2 ]; then exit 0; fi
+          exit $EXIT
+
+      - name: Tallenna lokit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: brief-logs-${{ github.run_id }}
+          path: logs/
+          retention-days: 30
