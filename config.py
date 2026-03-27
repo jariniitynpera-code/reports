@@ -180,3 +180,22 @@ BRIEF_TIGHT_DAY_MEETING_HOURS = float(os.getenv("BRIEF_TIGHT_DAY_MEETING_HOURS")
 
 # Briiffin ajastusaika (dokumentaatiota varten)
 BRIEF_CRON_TIME = os.getenv("BRIEF_CRON_TIME", "16:00")
+
+# ── Kokousmuistiot → ClickUp-tehtävät ─────────────────────────────────────────
+
+# ClickUp-lista johon kokousmuistioista generoidut tehtävät julkaistaan
+MEETING_NOTES_CLICKUP_LIST_ID = os.getenv("MEETING_NOTES_CLICKUP_LIST_ID", "")
+
+# Confidence-raja action item -tehtäville (0.0–1.0)
+MEETING_NOTES_MIN_CONFIDENCE = float(os.getenv("MEETING_NOTES_MIN_CONFIDENCE") or "0.7")
+
+# Confidence-raja follow-up-tehtäville (0.0–1.0)
+MEETING_NOTES_FOLLOWUP_MIN_CONFIDENCE = float(os.getenv("MEETING_NOTES_FOLLOWUP_MIN_CONFIDENCE") or "0.6")
+
+# ── Anthropic API (extraction-logiikka) ────────────────────────────────────────
+
+# API-avain (valinnainen — sääntöpohjainen varamenetelmä toimii ilman)
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+
+# Claude-malli extraction-vaiheessa
+ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")

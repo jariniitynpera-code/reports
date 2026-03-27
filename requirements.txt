@@ -19,5 +19,8 @@ backports.zoneinfo>=0.2.1; python_version < "3.9"
 google-api-python-client>=2.100.0; extra == "gcal"
 google-auth>=2.23.0; extra == "gcal"
 
+# Anthropic API (kokousmuistio-extraction — valinnainen, sääntöpohjainen varamenetelmä toimii ilman)
+anthropic>=0.40.0
+
 # Testikehys
 pytest>=8.0.0

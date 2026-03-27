@@ -1,0 +1,108 @@
+name: Kokousmuistiot → ClickUp
+
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: 'Lähde: gdoc=Google Docs URL, text=tiedostopolku'
+        required: true
+        default: 'gdoc'
+        type: choice
+        options:
+          - gdoc
+          - text
+      value:
+        description: 'Google Docs URL tai tiedostopolku'
+        required: true
+        default: ''
+      date:
+        description: 'Kokouspäivä YYYY-MM-DD (tyhjä = päätellään lähteestä)'
+        required: false
+        default: ''
+      title:
+        description: 'Kokouksen otsikko (valinnainen)'
+        required: false
+        default: ''
+      dry_run:
+        description: 'Dry-run (tunnista tehtävät, älä luo ClickUpiin)'
+        required: false
+        default: 'false'
+        type: boolean
+      force:
+        description: 'Pakota uudelleenajo vaikka sama muistio on jo käsitelty'
+        required: false
+        default: 'false'
+        type: boolean
+      show_extraction:
+        description: 'Tulosta extraction-tulos lokiin'
+        required: false
+        default: 'true'
+        type: boolean
+
+jobs:
+  process-meeting-notes:
+    name: Prosessoi kokousmuistio
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Aseta Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Asenna riippuvuudet
+        run: pip install -r requirements.txt
+
+      - name: Prosessoi muistio
+        env:
+          SHOPIFY_SHOP:               ${{ secrets.SHOPIFY_SHOP }}
+          SHOPIFY_CLIENT_ID:          ${{ secrets.SHOPIFY_CLIENT_ID }}
+          SHOPIFY_CLIENT_SECRET:      ${{ secrets.SHOPIFY_CLIENT_SECRET }}
+          SHOPIFY_API_VERSION:        ${{ secrets.SHOPIFY_API_VERSION }}
+          SUPABASE_URL:               ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY:       ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CLICKUP_API_KEY:            ${{ secrets.CLICKUP_API_KEY }}
+          CLICKUP_LIST_ID:            ${{ secrets.CLICKUP_LIST_ID }}
+          TIMEZONE:                   Europe/Helsinki
+          MEETING_NOTES_CLICKUP_LIST_ID: ${{ secrets.MEETING_NOTES_CLICKUP_LIST_ID }}
+          MEETING_NOTES_MIN_CONFIDENCE:  ${{ secrets.MEETING_NOTES_MIN_CONFIDENCE }}
+          ANTHROPIC_API_KEY:          ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_MODEL:            ${{ secrets.ANTHROPIC_MODEL }}
+          GCAL_CREDENTIALS_JSON:      ${{ secrets.GCAL_CREDENTIALS_JSON }}
+          GCAL_CALENDAR_ID:           ${{ secrets.GCAL_CALENDAR_ID }}
+        run: |
+          ARGS="--${{ github.event.inputs.source }} ${{ github.event.inputs.value }}"
+
+          if [ -n "${{ github.event.inputs.date }}" ]; then
+            ARGS="$ARGS --date ${{ github.event.inputs.date }}"
+          fi
+          if [ -n "${{ github.event.inputs.title }}" ]; then
+            ARGS="$ARGS --title \"${{ github.event.inputs.title }}\""
+          fi
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+            ARGS="$ARGS --force"
+          fi
+          if [ "${{ github.event.inputs.show_extraction }}" = "true" ]; then
+            ARGS="$ARGS --show-extraction"
+          fi
+
+          python meeting_notes_main.py $ARGS
+          EXIT=$?
+          if [ $EXIT -eq 2 ]; then exit 0; fi
+          exit $EXIT
+
+      - name: Tallenna lokit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: meeting-notes-logs-${{ github.run_id }}
+          path: logs/
+          retention-days: 30
