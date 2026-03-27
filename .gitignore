@@ -1,0 +1,22 @@
+# Ympäristömuuttujat — EI koskaan versionhallintaan
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Lokit
+logs/
+
+# macOS
+.DS_Store
+
+# Token-välimuisti
+.shopify_token_cache

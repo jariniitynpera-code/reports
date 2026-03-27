@@ -1,0 +1,79 @@
+name: Shopify Daily Report
+
+on:
+  schedule:
+    # 04:30 UTC = 07:30 EEST (kesäaika) / 06:30 EET (talviaika)
+    # Vaihda 05:30 UTC:ksi talvella jos haluat tasan 07:30
+    - cron: '30 4 * * *'
+  workflow_dispatch:
+    # Mahdollistaa manuaalisen ajon GitHubista (Actions-välilehti → Run workflow)
+    inputs:
+      date:
+        description: 'Raporttipäivä (YYYY-MM-DD), tyhjä = eilen'
+        required: false
+        default: ''
+      force:
+        description: 'Aja uudelleen vaikka raportti on jo olemassa'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  run-report:
+    name: Generoi päiväraportti
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Aseta Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Asenna riippuvuudet
+        run: pip install -r requirements.txt
+
+      - name: Aja päiväraportti
+        env:
+          SHOPIFY_SHOP:          ${{ secrets.SHOPIFY_SHOP }}
+          SHOPIFY_CLIENT_ID:     ${{ secrets.SHOPIFY_CLIENT_ID }}
+          SHOPIFY_CLIENT_SECRET: ${{ secrets.SHOPIFY_CLIENT_SECRET }}
+          SHOPIFY_API_VERSION:   ${{ secrets.SHOPIFY_API_VERSION }}
+          SUPABASE_URL:          ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY:  ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CLICKUP_API_KEY:       ${{ secrets.CLICKUP_API_KEY }}
+          CLICKUP_LIST_ID:       ${{ secrets.CLICKUP_LIST_ID }}
+          CLICKUP_TASKS_LIST_ID: ${{ secrets.CLICKUP_TASKS_LIST_ID }}
+          TIMEZONE:              Europe/Helsinki
+          SLACK_WEBHOOK_URL:     ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_NOTIFY_GREEN:    ${{ secrets.SLACK_NOTIFY_GREEN }}
+          ALERT_EMAIL:           ${{ secrets.ALERT_EMAIL }}
+          SMTP_HOST:             ${{ secrets.SMTP_HOST }}
+          SMTP_PORT:             ${{ secrets.SMTP_PORT }}
+          SMTP_USER:             ${{ secrets.SMTP_USER }}
+          SMTP_PASS:             ${{ secrets.SMTP_PASS }}
+          GCAL_CREDENTIALS_FILE: ${{ secrets.GCAL_CREDENTIALS_FILE }}
+          GCAL_CALENDAR_ID:      ${{ secrets.GCAL_CALENDAR_ID }}
+          INVENTORY_LOW_STOCK_THRESHOLD: ${{ secrets.INVENTORY_LOW_STOCK_THRESHOLD }}
+          INVENTORY_CHECK_ENABLED:       ${{ secrets.INVENTORY_CHECK_ENABLED }}
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.date }}" ]; then
+            ARGS="--date ${{ github.event.inputs.date }}"
+          fi
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+            ARGS="$ARGS --force"
+          fi
+          python main.py $ARGS
+
+      - name: Tallenna lokit artifaktiksi
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-report-logs-${{ github.run_id }}
+          path: logs/
+          retention-days: 30

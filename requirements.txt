@@ -1,0 +1,23 @@
+# Shopify Daily Report — Python-riippuvuudet
+# Asenna: pip install -r requirements.txt
+
+# HTTP-asiakaskirjasto (Shopify & ClickUp API)
+requests>=2.31.0
+
+# Supabase-asiakas
+supabase>=2.4.0
+
+# Ympäristömuuttujien lataus
+python-dotenv>=1.0.0
+
+# Aikavyöhyketuki (Python < 3.9 tarvitsee backports.zoneinfo)
+# Python 3.9+ sisältää zoneinfo vakiokirjastossa
+backports.zoneinfo>=0.2.1; python_version < "3.9"
+
+# Google Calendar -integraatio (valinnainen — asenna vain jos käytät)
+# pip install google-api-python-client google-auth
+google-api-python-client>=2.100.0; extra == "gcal"
+google-auth>=2.23.0; extra == "gcal"
+
+# Testikehys
+pytest>=8.0.0
