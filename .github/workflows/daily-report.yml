@@ -69,6 +69,10 @@ jobs:
             ARGS="$ARGS --force"
           fi
           python main.py $ARGS
+          EXIT=$?
+          # Exit code 2 = raportti on jo olemassa (ohitettu) — ei virhe
+          if [ $EXIT -eq 2 ]; then exit 0; fi
+          exit $EXIT
 
       - name: Tallenna lokit artifaktiksi
         if: always()
