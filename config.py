@@ -156,6 +156,6 @@ EMAIL_NOTIFY_GREEN = os.getenv("EMAIL_NOTIFY_GREEN", "false")
 # ── Varasto ───────────────────────────────────────────────────────────────────
 
 # Varaston hälytysraja kappaleissa (0 = varastoriskitarkistus pois)
-INVENTORY_LOW_STOCK_THRESHOLD = int(os.getenv("INVENTORY_LOW_STOCK_THRESHOLD", "5"))
+INVENTORY_LOW_STOCK_THRESHOLD = int(os.getenv("INVENTORY_LOW_STOCK_THRESHOLD") or "5")
 # "false" = ei tarkisteta varastoja (nopeuttaa ajoa jos ei tarvita)
 INVENTORY_CHECK_ENABLED = os.getenv("INVENTORY_CHECK_ENABLED", "true").lower() == "true"
