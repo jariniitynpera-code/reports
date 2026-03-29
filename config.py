@@ -199,3 +199,19 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 
 # Claude-malli extraction-vaiheessa
 ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
+
+
+# ── Pikasyöttö (Voice Capture) ─────────────────────────────────────────────────
+
+# GCAL_CREDENTIALS_JSON: palvelutilin JSON merkkijonona (GitHub Actions)
+# Sama muuttuja kuin brief_calendar.py käyttää — ei tarvita erikseen
+GCAL_CREDENTIALS_JSON = os.getenv("GCAL_CREDENTIALS_JSON", "")
+
+# Pikasyötön oletuslistoja — ei tarvita erikseen koodissa (CATEGORY_LIST_MAP),
+# mutta voi ylikirjoittaa testausta varten
+QUICK_CAPTURE_DEFAULT_LIST_ID = os.getenv(
+    "QUICK_CAPTURE_DEFAULT_LIST_ID", "901522468792"  # Tehtävät
+)
+QUICK_CAPTURE_IDEAS_LIST_ID = os.getenv(
+    "QUICK_CAPTURE_IDEAS_LIST_ID", "901522468793"    # Ideat
+)
