@@ -272,8 +272,11 @@ _DUE_PATTERNS = [
     (r"\bensi keskiviikko(na)?\b", lambda t: _next_weekday(t, 2)),
     (r"\bensi torstai(na)?\b",  lambda t: _next_weekday(t, 3)),
     (r"\bensi perjantai(na)?\b", lambda t: _next_weekday(t, 4)),
-    (r"\bperjantaihin\b",       lambda t: _next_weekday(t, 4)),
     (r"\bmaanantaihin\b",       lambda t: _next_weekday(t, 0)),
+    (r"\btiistaihin\b",         lambda t: _next_weekday(t, 1)),
+    (r"\bkeskiviikkoon\b",      lambda t: _next_weekday(t, 2)),
+    (r"\btorstaihin\b",         lambda t: _next_weekday(t, 3)),
+    (r"\bperjantaihin\b",       lambda t: _next_weekday(t, 4)),
     (r"\bkuun loppuun\b",       lambda t: _end_of_month(t)),
 ]
 
