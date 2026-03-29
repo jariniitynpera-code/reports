@@ -58,7 +58,7 @@ jobs:
           CLICKUP_API_KEY:       ${{ secrets.CLICKUP_API_KEY }}
           CLICKUP_LIST_ID:       ${{ secrets.CLICKUP_LIST_ID }}
           ANTHROPIC_API_KEY:     ${{ secrets.ANTHROPIC_API_KEY }}
-          ANTHROPIC_MODEL:       ${{ secrets.ANTHROPIC_MODEL }}
+          ANTHROPIC_MODEL:       ${{ secrets.ANTHROPIC_MODEL || 'claude-haiku-4-5-20251001' }}
           GCAL_CREDENTIALS_JSON: ${{ secrets.GCAL_CREDENTIALS_JSON }}
           GCAL_CALENDAR_ID:      ${{ secrets.GCAL_CALENDAR_ID }}
           TIMEZONE:              Europe/Helsinki
