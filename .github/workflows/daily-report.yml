@@ -52,10 +52,11 @@ jobs:
           SLACK_WEBHOOK_URL:     ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_NOTIFY_GREEN:    ${{ secrets.SLACK_NOTIFY_GREEN }}
           ALERT_EMAIL:           ${{ secrets.ALERT_EMAIL }}
-          SMTP_HOST:             ${{ secrets.SMTP_HOST }}
-          SMTP_PORT:             ${{ secrets.SMTP_PORT }}
+          SMTP_HOST:             smtp.gmail.com
+          SMTP_PORT:             587
           SMTP_USER:             ${{ secrets.SMTP_USER }}
           SMTP_PASS:             ${{ secrets.SMTP_PASS }}
+          EMAIL_NOTIFY_GREEN:    true
           GCAL_CREDENTIALS_FILE: ${{ secrets.GCAL_CREDENTIALS_FILE }}
           GCAL_CALENDAR_ID:      ${{ secrets.GCAL_CALENDAR_ID }}
           INVENTORY_LOW_STOCK_THRESHOLD: ${{ secrets.INVENTORY_LOW_STOCK_THRESHOLD }}

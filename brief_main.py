@@ -168,7 +168,25 @@ def run(
                 )
                 log.info(f"ClickUp: {publish_action} — {clickup_task_url}")
 
-        # ── 7. Tallennus Supabaseen ───────────────────────────────────────────
+        # ── 7. Sähköposti ─────────────────────────────────────────────────────
+        if not dry_run:
+            try:
+                from email_client import send_brief_email
+                sent = send_brief_email(
+                    brief_date=brief_date,
+                    brief_text=brief.brief_text,
+                    day_load=brief.day_load.value,
+                    tasks_count=len(brief.selected_tasks),
+                    meetings_count=len(brief.meetings),
+                    clickup_url=clickup_task_url,
+                    warnings=[w.message for w in brief.transition_warnings],
+                )
+                if sent:
+                    log.info("Briiffi lähetetty sähköpostitse")
+            except Exception as e:
+                log.warning(f"Briiffi-sähköpostin lähetys epäonnistui (ei kriittinen): {e}")
+
+        # ── 8. Tallennus Supabaseen ───────────────────────────────────────────
         # Tallennetaan myös dry-runissa (ilman ClickUp-tietoja)
         brief_db.save_brief(
             brief_date=brief_date,

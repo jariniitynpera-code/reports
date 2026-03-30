@@ -61,6 +61,13 @@ jobs:
           # Google Calendar (valinnainen)
           GCAL_CREDENTIALS_JSON: ${{ secrets.GCAL_CREDENTIALS_JSON }}
           GCAL_CALENDAR_ID:      ${{ secrets.GCAL_CALENDAR_ID }}
+          # Sähköposti
+          ALERT_EMAIL:           ${{ secrets.ALERT_EMAIL }}
+          SMTP_HOST:             smtp.gmail.com
+          SMTP_PORT:             587
+          SMTP_USER:             ${{ secrets.SMTP_USER }}
+          SMTP_PASS:             ${{ secrets.SMTP_PASS }}
+          EMAIL_NOTIFY_GREEN:    true
         run: |
           ARGS=""
           if [ -n "${{ github.event.inputs.date }}" ]; then
