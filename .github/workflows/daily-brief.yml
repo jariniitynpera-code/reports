@@ -79,8 +79,11 @@ jobs:
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
             ARGS="$ARGS --dry-run"
           fi
+          set +e
           python brief_main.py $ARGS
           EXIT=$?
+          set -e
+          # Exit code 2 = briiffi on jo olemassa (ohitettu) — ei virhe
           if [ $EXIT -eq 2 ]; then exit 0; fi
           exit $EXIT
 

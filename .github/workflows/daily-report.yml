@@ -69,8 +69,10 @@ jobs:
           if [ "${{ github.event.inputs.force }}" = "true" ]; then
             ARGS="$ARGS --force"
           fi
+          set +e
           python main.py $ARGS
           EXIT=$?
+          set -e
           # Exit code 2 = raportti on jo olemassa (ohitettu) — ei virhe
           if [ $EXIT -eq 2 ]; then exit 0; fi
           exit $EXIT
