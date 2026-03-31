@@ -89,8 +89,8 @@ def generate_brief(
     tz  = ZoneInfo(config.TIMEZONE)
     now = datetime.now(tz)
 
-    # 1. Luokittele päivä
-    day_load = classify_day_load(events)
+    # 1. Luokittele päivä (otetaan tehtävät mukaan luokitteluun)
+    day_load = classify_day_load(events, tasks)
 
     # 2. Siirtymävaroitukset (injektoidaan ulkoa, ei kutsuta tässä)
     #    Kutsuja (brief_main.py) välittää transition_warnings
@@ -99,9 +99,13 @@ def generate_brief(
     transitions         = detect_transitions(events)
     transition_warnings = [t.message for t in transitions]
 
-    # 3. Valitse tehtävät
+    # 3. Valitse tehtävät (erääntyneet aina mukaan)
+    from datetime import date as _date
+    today         = _date.today()
+    overdue       = [t for t in tasks if t.due_date and t.due_date < today]
+    upcoming      = [t for t in tasks if not (t.due_date and t.due_date < today)]
     effective_max = _effective_max_tasks(day_load, max_tasks)
-    selected      = select_tasks(tasks, day_load, effective_max)
+    selected      = select_tasks(upcoming, day_load, effective_max)
 
     # 4. Aloitustehtävä
     start_obj      = select_start_task(selected, events)
@@ -128,13 +132,15 @@ def generate_brief(
         start_task=start_task,
         start_task_url=start_task_url,
         status_note=status_note,
+        overdue_tasks=overdue,
     )
 
     source_summary = {
-        "events_count":   len(events),
-        "tasks_fetched":  len(tasks),
-        "tasks_selected": len(selected),
-        "transitions":    len(transitions),
+        "events_count":    len(events),
+        "tasks_fetched":   len(tasks),
+        "tasks_selected":  len(selected),
+        "tasks_overdue":   len(overdue),
+        "transitions":     len(transitions),
         "shopify_signals": bool(shopify_signals and shopify_signals.has_open_alerts),
     }
 
@@ -162,8 +168,11 @@ def generate_brief(
 
 # ── Päivän luokittelu ─────────────────────────────────────────────────────────
 
-def classify_day_load(events: list[CalendarEvent]) -> DayLoad:
-    """Luokittelee päivän kuorman kalenteritapahtumien perusteella."""
+def classify_day_load(
+    events: list[CalendarEvent],
+    tasks:  list["BriefTask"] | None = None,
+) -> DayLoad:
+    """Luokittelee päivän kuorman kalenterin ja tehtävien perusteella."""
     import config
     tight_hours = getattr(config, "BRIEF_TIGHT_DAY_MEETING_HOURS", 4.0)
 
@@ -175,6 +184,15 @@ def classify_day_load(events: list[CalendarEvent]) -> DayLoad:
         return DayLoad.MOVING
     if hours >= tight_hours or timed_count >= 4:
         return DayLoad.TIGHT
+
+    # Jos erääntyneitä tehtäviä, päivä ei ole "kevyt" vaikka kalenteri on tyhjä
+    if tasks:
+        from datetime import date as _date
+        today = _date.today()
+        overdue = [t for t in tasks if t.due_date and t.due_date < today]
+        if overdue and hours <= 1.0 and timed_count <= 1:
+            return DayLoad.NORMAL
+
     if hours <= 1.0 and timed_count <= 1:
         return DayLoad.LIGHT
     return DayLoad.NORMAL
@@ -323,6 +341,7 @@ def _render_brief(
     start_task:          Optional[str],
     start_task_url:      Optional[str],
     status_note:         str,
+    overdue_tasks:       list["BriefTask"] | None = None,
 ) -> str:
     """Renderöi lopullisen briiffitekstin Markdownina."""
     weekday = WEEKDAY_FI[tomorrow.weekday()]
@@ -330,6 +349,20 @@ def _render_brief(
 
     lines.append(f"## HUOMINEN — {weekday} {tomorrow.strftime('%-d.%-m.%Y')}")
     lines.append("")
+
+    # Erääntyneet tehtävät — aina ensimmäisenä jos niitä on
+    if overdue_tasks:
+        lines.append(f"**⚠️ Myöhässä ({len(overdue_tasks)} kpl):**")
+        for t in overdue_tasks[:5]:
+            days_late = (date.today() - t.due_date).days if t.due_date else 0
+            suffix = f" (+{days_late} pv)" if days_late > 0 else ""
+            if t.url:
+                lines.append(f"- [{t.name}]({t.url}){suffix}")
+            else:
+                lines.append(f"- {t.name}{suffix}")
+        if len(overdue_tasks) > 5:
+            lines.append(f"- _...ja {len(overdue_tasks) - 5} muuta_")
+        lines.append("")
 
     # Tärkeintä
     if key_items:
