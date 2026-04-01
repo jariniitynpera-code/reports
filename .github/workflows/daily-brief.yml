@@ -5,6 +5,8 @@ on:
     # 13:00 UTC = 16:00 EEST (kesäaika) / 15:00 EET (talviaika)
     # Vaihda 14:00 UTC:ksi talvella jos haluat tasan 16:00
     - cron: '0 13 * * 1-5'   # Arkisin ma–pe
+  repository_dispatch:
+    types: [daily-brief]
   workflow_dispatch:
     inputs:
       date:

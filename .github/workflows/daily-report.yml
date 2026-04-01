@@ -5,6 +5,8 @@ on:
     # 04:30 UTC = 07:30 EEST (kesäaika) / 06:30 EET (talviaika)
     # Vaihda 05:30 UTC:ksi talvella jos haluat tasan 07:30
     - cron: '30 4 * * *'
+  repository_dispatch:
+    types: [daily-report]
   workflow_dispatch:
     # Mahdollistaa manuaalisen ajon GitHubista (Actions-välilehti → Run workflow)
     inputs:
